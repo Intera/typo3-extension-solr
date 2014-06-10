@@ -261,10 +261,12 @@ class Tx_Solr_IndexQueue_FrontendHelper_PageIndexer extends Tx_Solr_IndexQueue_F
 		}
 
 		try {
+			/** @var Tx_Solr_Typo3PageIndexer $indexer */
 			$indexer = GeneralUtility::makeInstance('Tx_Solr_Typo3PageIndexer', $page);
 			$indexer->setSolrConnection($this->getSolrConnection());
 			$indexer->setPageAccessRootline($this->getAccessRootline());
 			$indexer->setPageUrl($this->generatePageUrl());
+			$indexer->setMountPointParameter($GLOBALS['TSFE']->MP);
 
 			$this->responseData['pageIndexed']          = (int)   $indexer->indexPage();
 			$this->responseData['originalPageDocument'] = (array) $indexer->getPageSolrDocument();
