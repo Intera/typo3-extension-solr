@@ -163,10 +163,46 @@ class GarbageCollector
             // a site can have multiple connections (cores / languages)
             $solrConnections = $connectionManager->getConnectionsBySite($site);
             foreach ($solrConnections as $solr) {
-                $solr->deleteByQuery('type:' . $table . ' AND uid:' . intval($uid));
+                $deleteQuery = $this->buildDeleteQueryByTypeAndUid($table, $uid);
+
+                if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['solr']['garbageCollectorPreProcessDeleteQuery'])) {
+                    foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['solr']['garbageCollectorPreProcessDeleteQuery'] as $classReference) {
+                        $deleteQueryPreProcessor = GeneralUtility::getUserObj($classReference);
+                        if ($deleteQueryPreProcessor instanceof GarbageCollectorDeleteQueryPreProcessor) {
+                            $deleteQuery = $deleteQueryPreProcessor->getGarbageCollectorDeleteQuery(
+                                $deleteQuery,
+                                $table,
+                                $uid,
+                                $indexQueueItem,
+                                $this
+                            );
+                        } else {
+                            throw new \UnexpectedValueException(
+                                get_class($deleteQueryPreProcessor) . ' must implement interface' .
+                                ' ApacheSolrForTypo3\Solr\GarbageCollectorDeleteQueryPreProcessor',
+                                1411735700
+                            );
+                        }
+                    }
+                }
+
+                $solr->deleteByQuery($deleteQuery);
                 $solr->commit(false, false, false);
             }
         }
+    }
+
+    /**
+     * Builds the query for deleting Solr documents of the given type with the given UID.
+     * The method is public so that it can be called by hooks.
+     *
+     * @param string $type
+     * @param int $uid
+     * @return string
+     */
+    public function buildDeleteQueryByTypeAndUid($type, $uid)
+    {
+        return 'type:' . $type . ' AND uid:' . intval($uid);
     }
 
     /**
