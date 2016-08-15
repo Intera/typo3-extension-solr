@@ -321,7 +321,9 @@ class Tx_Solr_IndexQueue_PageIndexer extends Tx_Solr_IndexQueue_Indexer {
 
 			foreach ($translationOverlays as $overlay) {
 				$languageId = $overlay['sys_language_uid'];
-				$accessibleSolrConnections[$languageId] = $solrConnections[$languageId];
+				if (isset($solrConnections[$languageId])) {
+					$accessibleSolrConnections[$languageId] = $solrConnections[$languageId];
+				}
 			}
 
 			$solrConnections = $accessibleSolrConnections;
