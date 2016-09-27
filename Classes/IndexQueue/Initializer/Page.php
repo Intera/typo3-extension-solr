@@ -32,6 +32,7 @@ use ApacheSolrForTypo3\Solr\Utility\DatabaseUtility;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
+use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -103,6 +104,17 @@ class Page extends AbstractInitializer
         $this->addMountedPagesToIndexQueue($mountedPages, $mountProperties);
         $this->addIndexQueueItemIndexingProperties($mountProperties,
             $mountedPages);
+    }
+
+    /**
+     * Adds the given flash message to the default queue.
+     *
+     * @param FlashMessage $flashMessage
+     */
+    protected function addFlashMessage(FlashMessage $flashMessage)
+    {
+        $flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
+        $flashMessageService->getMessageQueueByIdentifier()->addMessage($flashMessage);
     }
 
     /**
@@ -193,7 +205,7 @@ class Page extends AbstractInitializer
                 'Failed to initialize Mount Page tree. ',
                 FlashMessage::ERROR
             );
-            FlashMessageQueue::addMessage($flashMessage);
+            $this->addFlashMessage($flashMessage);
         }
 
         if (!$this->mountedPageExists($mountPage['mountPageSource'])) {
@@ -209,7 +221,7 @@ class Page extends AbstractInitializer
                 'Failed to initialize Mount Page tree. ',
                 FlashMessage::ERROR
             );
-            FlashMessageQueue::addMessage($flashMessage);
+            $this->addFlashMessage($flashMessage);
         }
 
         return $isValidMountPage;
