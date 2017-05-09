@@ -227,9 +227,10 @@ abstract class PluginBase extends AbstractPlugin
      * merged onto the values found in the "locallang" file.
      * Supported file extensions xlf, xml, php
      *
+     * @param string $languageFilePath
      * @return void
      */
-    public function pi_loadLL()
+    public function pi_loadLL($languageFilePath = '')
     {
         if (!$this->LOCAL_LANG_loaded && $this->scriptRelPath) {
             $pathElements = pathinfo($this->scriptRelPath);
